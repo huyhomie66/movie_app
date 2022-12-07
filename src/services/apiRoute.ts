@@ -8,11 +8,12 @@ export interface IParams {
 }
 
 export interface IMovieListParams extends IParams {
-  page: number;
+  page?: number;
   query?: string;
 }
 
-interface MovieInfo {
+export interface MovieInfo {
+  id: number;
   overview: string;
   title: string;
   poster_path: string;
@@ -21,45 +22,46 @@ interface MovieInfo {
   vote_count: number;
 }
 
-interface PlayNowResult {
+export interface MovieListResult {
   results: MovieInfo[];
   total_pages: number;
   total_results: number;
 }
-const formatData = (data: MovieInfo[]) => {
-  return data.map((item) => ({
-    ...item,
-    poster_path: `${IMAGE_URL}${item?.poster_path}`
-  }));
-};
+
+export interface IMovieDetailParam extends IMovieListParams {
+  movie_id: number;
+}
+
 const getCurrentPlayingList = async (
   params: IMovieListParams
-): Promise<PlayNowResult> => {
+): Promise<MovieListResult> => {
   const query = stringify({ ...params });
   const result = await axiosInstance.get(`/movie/now_playing?${query}`);
-  const finalData = {
-    ...result?.data,
-    results: formatData(result?.data?.results)
-  };
-
-  return finalData;
+  return result.data;
 };
 
 const getTopRateList = async (
   params: IMovieListParams
-): Promise<PlayNowResult> => {
+): Promise<MovieListResult> => {
   const query = stringify({ ...params });
 
   const result = await axiosInstance.get(`/movie/top_rated?${query}`);
-  return { ...result?.data, results: formatData(result?.data?.results) };
+  return result.data;
 };
 
 const searchMovies = async (
   params: IMovieListParams
-): Promise<PlayNowResult> => {
+): Promise<MovieListResult> => {
   const query = stringify({ ...params });
   const result = await axiosInstance.get(`/search/multi?${query}`);
-  return { ...result.data, results: formatData(result?.data?.results) };
+  return result.data;
 };
 
-export { getCurrentPlayingList, getTopRateList, searchMovies };
+const getMovieDetail = async (params: IMovieDetailParam) => {
+  const query = stringify({ ...params });
+
+  const result = await axiosInstance.get(`/movie/${params.movie_id}?${query}`);
+  return result.data;
+};
+
+export { getCurrentPlayingList, getTopRateList, searchMovies, getMovieDetail };

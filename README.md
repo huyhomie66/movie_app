@@ -1,4 +1,4 @@
-# Project - *Movies*
+# Project - _Movies_
 
 **Movies** is a movies app using the [The Movie Database API](https://developers.themoviedb.org/3).
 
@@ -51,3 +51,22 @@ Here's a walkthrough of implemented user stories:
     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
     See the License for the specific language governing permissions and
     limitations under the License.
+
+# tech stack using
+
+ts , next js, chakra ui
+
+# func: play now list , top rate list , pagination, pull to refresh, image lazy loading
+
+# project structure:
+
+        src
+            components: ui components
+            config : store config from env
+            hooks: hook doing ui job and call api
+            pages: page
+            services: call api services
+            styles: global styles
+            theme: config theme
+
+# preview

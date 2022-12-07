@@ -1,106 +1,119 @@
-import styles from "src/styles/Home.module.css";
-import { Layout } from "src/components/Layout";
 import {
   TabPanels,
   TabPanel,
-  Spinner,
-  Box,
-  Text,
   VStack,
   SimpleGrid,
-  Stack
+  Tabs,
+  TabList,
+  Tab,
+  Input
 } from "@chakra-ui/react";
-import { usePlayNowList } from "src/hooks/usePlayNowList";
-import { Tabs, TabList, Tab, Image, Input } from "@chakra-ui/react";
-import React, { FC, useState } from "react";
-import { IMovieListParams } from "src/services/apiRoute";
-import { useTopRateList } from "src/hooks/useTopRateList";
-import dynamic from "next/dynamic";
+import PullToRefresh from "react-simple-pull-to-refresh";
 
-const ReactPullToRefresh = dynamic(() => import("react-pull-to-refresh"), {
-  ssr: false
-});
-const initState: IMovieListParams = {
-  page: 1
-};
+import { FC, useState } from "react";
+import { useQueryParam, StringParam, withDefault } from "use-query-params";
+
+import styles from "src/styles/Home.module.css";
+import { Layout } from "src/components/Layout";
+import { usePlayNowList } from "src/hooks/usePlayNowList";
+import { useTopRateList } from "src/hooks/useTopRateList";
+import { useSearch } from "src/hooks/useSearch";
+import MovieList from "src/components/MovieList";
+import MovieGrid from "src/components/MovieGrid";
 
 const PlayNowList: FC = () => {
-  const [state, setState] = useState<IMovieListParams>(initState);
-  const { isLoading, isError, data, error, refetch } = usePlayNowList(state);
+  const [page, setPage] = useState<number>(1);
+  const { isLoading, isError, data, error, refetch, isFetching } =
+    usePlayNowList({ page });
+
+  const handleRefresh = async () => {
+    refetch();
+  };
+
+  const setPageChange = (page: number) => {
+    setPage(page);
+  };
+
+  const movieListProps = {
+    isLoading: isFetching || isLoading,
+    isError,
+    data,
+    error
+  };
+
+  return (
+    <PullToRefresh onRefresh={handleRefresh}>
+      <MovieList {...movieListProps} setPageChange={setPageChange} />
+    </PullToRefresh>
+  );
+};
+
+const TopRateList: FC = () => {
+  const [page, setPage] = useState<number>(1);
+
+  const setPageChange = (page: number) => {
+    setPage(page);
+  };
+
+  const { isLoading, isError, data, error, refetch, isFetching } =
+    useTopRateList({ page });
+
+  const movieListProps = {
+    isLoading: isFetching || isLoading,
+    isError,
+    data,
+    error,
+    setPageChange
+  };
 
   const handleRefresh = async () => {
     refetch();
   };
 
   return (
-    <ReactPullToRefresh
-      onRefresh={handleRefresh}
-      className="your-own-class-if-you-want"
-      style={{ textAlign: "center" }}
-    >
-      <Stack
-        direction="row"
-        style={{ overflowX: "scroll", flexDirection: "row" }}
-      >
-        {isLoading && <Spinner />}
-        {!isLoading &&
-          !isError &&
-          data.results.map((item, index: number) => (
-            <VStack
-              key={index}
-              style={{
-                cursor: "pointer"
-              }}
-            >
-              <Image
-                marginRight={4}
-                alt="poster"
-                boxSize="120px"
-                objectFit="cover"
-                src={item.poster_path}
-              />
-
-              <Text fontSize={"xs"}>{item.title}</Text>
-            </VStack>
-          ))}
-        {isError && <div>{JSON.stringify(error)}</div>}
-      </Stack>
-    </ReactPullToRefresh>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <MovieGrid {...movieListProps} />
+    </PullToRefresh>
   );
 };
 
-const TopRateList: FC = () => {
-  const [state, setState] = useState<IMovieListParams>(initState);
-  const { isLoading, isError, data } = useTopRateList(state);
-  console.log({ data });
+const SearchList: FC<{ searchText: string }> = ({ searchText }) => {
+  const [page, setPage] = useState<number>(1);
+
+  const setPageChange = (page: number) => {
+    setPage(page);
+  };
+
+  const { data, isLoading, isError, error, refetch, isFetching } = useSearch({
+    query: searchText,
+    page
+  });
+
+  const movieListProps = {
+    isLoading: isFetching || isLoading,
+
+    isError,
+    data,
+    error,
+    setPageChange
+  };
+
+  const handleRefresh = async () => {
+    refetch();
+  };
 
   return (
-    <SimpleGrid minChildWidth="120px" spacing="40px">
-      {!isError &&
-        !isLoading &&
-        data.results.map((item, index) => (
-          <Box
-            key={index}
-            height="200px"
-            style={{
-              cursor: "pointer"
-            }}
-          >
-            <Image
-              alt="poster"
-              src={item.poster_path}
-              height="80%"
-              width={"100%"}
-            />
-            <Text fontSize={"sm"}>{item.title}</Text>
-          </Box>
-        ))}
-    </SimpleGrid>
+    <PullToRefresh onRefresh={handleRefresh}>
+      <MovieList {...movieListProps} />
+    </PullToRefresh>
   );
 };
 
 export default function Home() {
-  const [searchText, setSearch] = useState<string>();
+  const [searchText, setSearch] = useQueryParam(
+    "search",
+    withDefault(StringParam, "")
+  );
 
   const onSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(e.target.value);
@@ -114,10 +127,10 @@ export default function Home() {
     { title: "Top Rate", component: <TopRateList /> }
   ];
 
+  const isShowingSearchList = searchText?.length > 0;
   return (
     <div className={styles.container}>
       <Layout>
-        <Input placeholder="Search" onChange={onSearch} />
         <VStack>
           <Tabs isFitted variant="enclosed" width={"60vw"} alignSelf="center">
             <TabList mb="1em">
@@ -125,11 +138,19 @@ export default function Home() {
                 <Tab key={tab.title}>{tab.title}</Tab>
               ))}
             </TabList>
-            <TabPanels>
-              {tabs.map((tab) => (
-                <TabPanel key={tab.title}>{tab.component}</TabPanel>
-              ))}
-            </TabPanels>
+            <Input
+              placeholder="Search"
+              onChange={onSearch}
+              value={searchText}
+            />
+            {isShowingSearchList && <SearchList searchText={searchText} />}
+            {!isShowingSearchList && (
+              <TabPanels>
+                {tabs.map((tab) => (
+                  <TabPanel key={tab.title}>{tab.component}</TabPanel>
+                ))}
+              </TabPanels>
+            )}
           </Tabs>
         </VStack>
       </Layout>

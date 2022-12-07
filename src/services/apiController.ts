@@ -1,4 +1,5 @@
-import { IParams } from "src/services/apiRoute";
+import { IMovieDetailParam } from "./apiRoute";
+import { getMovieDetail, IParams } from "src/services/apiRoute";
 import {
   getCurrentPlayingList,
   getTopRateList,
@@ -20,7 +21,9 @@ const apiService = {
   getTopRateList: (params: IMovieListParams) =>
     getTopRateList({ ...params, ...defaultParams }),
   searchMovies: (params: IMovieListParams) =>
-    searchMovies({ ...params, ...defaultParams })
+    searchMovies({ ...params, ...defaultParams }),
+  getMovieDetail: (params: IMovieDetailParam) =>
+    getMovieDetail({ ...params, ...defaultParams })
 };
 
 export { apiService };

@@ -6,7 +6,7 @@ const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
   images: {
-    domains: ["image.tmdb.org"],
+    domains: ["image.tmdb.org", "png.pngtree.com"],
     minimumCacheTTL: 60
   }
 };
