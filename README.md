@@ -52,13 +52,13 @@ Here's a walkthrough of implemented user stories:
     See the License for the specific language governing permissions and
     limitations under the License.
 
-# tech stack using
+# Tech stack using
 
 ts , next js, chakra ui
 
-# func: play now list , top rate list , pagination, pull to refresh, image lazy loading
+# Function: play now list , top rate list , pagination, pull to refresh, image lazy loading
 
-# project structure:
+# Project Structure:
 
         src
             components: ui components
@@ -69,4 +69,9 @@ ts , next js, chakra ui
             styles: global styles
             theme: config theme
 
+# API call flow: hooks -> api controller -> api services -> axiosInstance
+
 # preview
+
+https://drive.google.com/file/d/1V0SVwdlPuymtBSHIR-0CvobfkCdIOS4-/view?usp=sharing
+`
